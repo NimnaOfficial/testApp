@@ -1,0 +1,6 @@
+{
+  "name": "AquaIntel Mobile",
+  "description": "Enterprise-grade Smart Water Infrastructure Control Center with real-time telemetry, auto-fill hysteresis controls, rationing lockdown, leak emergency management, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
