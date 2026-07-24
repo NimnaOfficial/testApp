@@ -54,11 +54,10 @@ import com.example.ui.screens.DashboardScreen
 import com.example.ui.screens.EmergencyLeakModal
 import com.example.ui.screens.SettingsModal
 import com.example.ui.theme.AquaIntelTheme
-import com.example.ui.theme.CyberBorder
 import com.example.ui.theme.CyberCardBg
 import com.example.ui.theme.CyberDarkBg
 import com.example.ui.theme.ElectricCyan
-import com.example.ui.theme.TextMuted
+import com.example.ui.theme.NavyBlue
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.viewmodel.AquaIntelViewModel
@@ -185,13 +184,13 @@ fun AquaTopBar(
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(ElectricCyan.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                .background(NavyBlue.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Water,
                 contentDescription = "AquaIntel Logo",
-                tint = ElectricCyan,
+                tint = NavyBlue,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -200,17 +199,17 @@ fun AquaTopBar(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
+                text = "CONNECTED",
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = NavyBlue,
+            )
+            Text(
                 text = "AQUAINTEL",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary,
                 letterSpacing = 1.sp
-            )
-            Text(
-                text = "Smart Water Control Center",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextSecondary
             )
         }
 
@@ -223,7 +222,7 @@ fun AquaTopBar(
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = "Settings",
-                tint = ElectricCyan,
+                tint = NavyBlue,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -236,7 +235,7 @@ fun AquaBottomBar(
     onTabSelected: (String) -> Unit
 ) {
     NavigationBar(
-        containerColor = CyberCardBg,
+        containerColor = CyberDarkBg,
         tonalElevation = 0.dp,
         modifier = Modifier
             .navigationBarsPadding()
@@ -248,9 +247,9 @@ fun AquaBottomBar(
             icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard", modifier = Modifier.size(22.dp)) },
             label = { Text("Dashboard", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = ElectricCyan,
-                selectedTextColor = ElectricCyan,
-                indicatorColor = ElectricCyan.copy(alpha = 0.15f),
+                selectedIconColor = NavyBlue,
+                selectedTextColor = NavyBlue,
+                indicatorColor = Color.Transparent,
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
             ),
@@ -263,9 +262,9 @@ fun AquaBottomBar(
             icon = { Icon(Icons.Default.Analytics, contentDescription = "Analytics", modifier = Modifier.size(22.dp)) },
             label = { Text("Logs & Trends", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = ElectricCyan,
-                selectedTextColor = ElectricCyan,
-                indicatorColor = ElectricCyan.copy(alpha = 0.15f),
+                selectedIconColor = NavyBlue,
+                selectedTextColor = NavyBlue,
+                indicatorColor = Color.Transparent,
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
             ),

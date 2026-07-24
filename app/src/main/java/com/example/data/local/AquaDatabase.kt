@@ -5,11 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(
-    entities = [TelemetrySnapshot::class, ActivityLog::class],
-    version = 1,
-    exportSchema = false
-)
+@Database(entities = [TelemetrySnapshot::class, ActivityLog::class], version = 1, exportSchema = false)
 abstract class AquaDatabase : RoomDatabase() {
     abstract fun aquaDao(): AquaDao
 
@@ -19,13 +15,12 @@ abstract class AquaDatabase : RoomDatabase() {
 
         fun getDatabase(context: Context): AquaDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
+                Room.databaseBuilder(
                     context.applicationContext,
                     AquaDatabase::class.java,
-                    "aquaintel_db"
-                ).fallbackToDestructiveMigration().build()
-                INSTANCE = instance
-                instance
+                    "aqua_database"
+                ).fallbackToDestructiveMigration(false)
+                    .build().also { INSTANCE = it }
             }
         }
     }

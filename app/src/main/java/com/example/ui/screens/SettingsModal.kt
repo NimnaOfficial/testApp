@@ -1,64 +1,65 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SimCard
-import androidx.compose.material.icons.filled.Water
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.example.data.preferences.AppConfig
-import com.example.ui.components.GlassmorphicCard
-import com.example.ui.theme.CriticalRed
 import com.example.ui.theme.CyberBorder
 import com.example.ui.theme.CyberCardBg
 import com.example.ui.theme.CyberDarkBg
-import com.example.ui.theme.CyberGlassCard
 import com.example.ui.theme.ElectricCyan
+import com.example.ui.theme.ErrorRed
+import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
-import com.example.ui.theme.WarningOrange
+import com.example.ui.theme.WarningAmber
 
 @Composable
 fun SettingsModal(
@@ -69,226 +70,153 @@ fun SettingsModal(
     onSaveServerIp: (String) -> Unit,
     onToggleSimulation: (Boolean) -> Unit,
     onToggleSimulatedLeak: (Boolean) -> Unit,
-    onSimulateWaterLevel: (Double) -> Unit
+    onSimulateWaterLevel: (Float) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    if (!isOpen) return
-
-    var ipInput by remember(config.serverIp) { mutableStateOf(config.serverIp) }
-
-    Dialog(onDismissRequest = onDismiss) {
-        GlassmorphicCard(
-            modifier = Modifier.fillMaxWidth()
+    AnimatedVisibility(
+        visible = isOpen,
+        enter = fadeIn() + slideInVertically { it / 2 },
+        exit = fadeOut() + slideOutVertically { it / 2 }
+    ) {
+        Box(
+            modifier = modifier.fillMaxSize().background(CyberDarkBg.copy(alpha = 0.95f)).testTag("settings_modal")
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(18.dp)
-                    .verticalScroll(rememberScrollState())
+                modifier = Modifier.fillMaxSize().padding(20.dp).verticalScroll(rememberScrollState())
             ) {
-                // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = null,
-                            tint = ElectricCyan,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "SYSTEM CONFIGURATION",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
+                    Text(text = "SETTINGS", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = ElectricCyan, letterSpacing = 1.sp)
+                    IconButton(onClick = onDismiss) { Icon(Icons.Default.Close, "Close", tint = TextSecondary) }
+                }
 
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.testTag("close_settings_button")
+                Spacer(Modifier.height(24.dp))
+
+                SettingsSection(title = "SERVER CONNECTION", icon = Icons.Default.Wifi) {
+                    var ipText by remember(config.serverIp) { mutableStateOf(config.serverIp) }
+                    OutlinedTextField(
+                        value = ipText,
+                        onValueChange = { ipText = it },
+                        label = { Text("Server IP Address") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().testTag("input_server_ip"),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = ElectricCyan,
+                            unfocusedBorderColor = CyberBorder,
+                            focusedLabelColor = ElectricCyan,
+                            unfocusedLabelColor = TextMuted,
+                            cursorColor = ElectricCyan,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        )
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        onClick = { onSaveServerIp(ipText) },
+                        modifier = Modifier.fillMaxWidth().testTag("btn_save_ip"),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan.copy(alpha = 0.15f), contentColor = ElectricCyan)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = TextMuted
-                        )
+                        Icon(Icons.Default.Save, "Save", modifier = Modifier.padding(end = 8.dp))
+                        Text("Save IP", fontWeight = FontWeight.Bold)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(20.dp))
 
-                // Section 1: Server IP Configuration
-                Text(
-                    text = "DYNAMIC BACKEND / ESP32 ADDRESS",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ElectricCyan,
-                    letterSpacing = 0.5.sp
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-
-                OutlinedTextField(
-                    value = ipInput,
-                    onValueChange = { ipInput = it },
-                    label = { Text("Server Host / IP:Port (e.g. 192.168.1.5:8080)") },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Dns, contentDescription = null, tint = ElectricCyan)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("server_ip_input"),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = CyberGlassCard,
-                        unfocusedContainerColor = CyberGlassCard,
-                        focusedBorderColor = ElectricCyan,
-                        unfocusedBorderColor = CyberBorder,
-                        focusedLabelColor = ElectricCyan,
-                        unfocusedLabelColor = TextMuted,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Button(
-                    onClick = { onSaveServerIp(ipInput) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ElectricCyan,
-                        contentColor = Color.Black
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(44.dp)
-                        .testTag("save_ip_button"),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("SAVE BACKEND ADDRESS", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Section 2: Hardware Simulation Mode
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(CyberGlassCard, RoundedCornerShape(12.dp))
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                SettingsSection(title = "SIMULATION MODE", icon = Icons.Default.Science) {
                     Row(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(imageVector = Icons.Default.SimCard, contentDescription = null, tint = WarningOrange)
-                        Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text("Simulated Telemetry Mode", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextPrimary)
-                            Text("Use when physical ESP32 hardware is offline", fontSize = 10.sp, color = TextMuted)
+                            Text("Enable Simulation", fontSize = 15.sp, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                            Text("Use mock data without hardware", fontSize = 12.sp, color = TextMuted)
                         }
+                        Switch(
+                            checked = config.simulationMode,
+                            onCheckedChange = onToggleSimulation,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = NeonGreen,
+                                checkedTrackColor = NeonGreen.copy(alpha = 0.3f),
+                                uncheckedThumbColor = TextMuted,
+                                uncheckedTrackColor = CyberBorder
+                            ),
+                            modifier = Modifier.testTag("switch_simulation")
+                        )
                     }
 
-                    Switch(
-                        checked = config.useSimulationMode,
-                        onCheckedChange = onToggleSimulation,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.Black,
-                            checkedTrackColor = ElectricCyan,
-                            uncheckedThumbColor = TextMuted,
-                            uncheckedTrackColor = CyberBorder
-                        )
-                    )
-                }
+                    if (config.simulationMode) {
+                        Spacer(Modifier.height(16.dp))
+                        HorizontalDivider(color = CyberBorder)
+                        Spacer(Modifier.height(16.dp))
 
-                if (config.useSimulationMode) {
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    Text(
-                        text = "LIVE TESTING TRIGGERS",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = WarningOrange,
-                        letterSpacing = 0.5.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = { onSimulateWaterLevel(10.0) },
-                            colors = ButtonDefaults.buttonColors(containerColor = WarningOrange.copy(alpha = 0.2f), contentColor = WarningOrange),
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Drain to 10%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Column {
+                                Text("Simulate Leak", fontSize = 15.sp, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                                Text("Trigger emergency leak overlay", fontSize = 12.sp, color = TextMuted)
+                            }
+                            Switch(
+                                checked = isSimulatedLeak,
+                                onCheckedChange = onToggleSimulatedLeak,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = ErrorRed,
+                                    checkedTrackColor = ErrorRed.copy(alpha = 0.3f),
+                                    uncheckedThumbColor = TextMuted,
+                                    uncheckedTrackColor = CyberBorder
+                                ),
+                                modifier = Modifier.testTag("switch_leak")
+                            )
                         }
 
-                        Button(
-                            onClick = { onSimulateWaterLevel(90.0) },
-                            colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan.copy(alpha = 0.2f), contentColor = ElectricCyan),
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("Fill to 90%", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(16.dp))
+
+                        var sliderValue by remember { mutableFloatStateOf(50f) }
+                        Column {
+                            Text("Simulate Water Level: ${sliderValue.toInt()}%", fontSize = 15.sp, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                            Slider(
+                                value = sliderValue,
+                                onValueChange = { sliderValue = it },
+                                onValueChangeFinished = { onSimulateWaterLevel(sliderValue) },
+                                valueRange = 0f..100f,
+                                modifier = Modifier.fillMaxWidth().testTag("slider_water_level"),
+                                colors = SliderDefaults.colors(thumbColor = ElectricCyan, activeTrackColor = ElectricCyan, inactiveTrackColor = CyberBorder)
+                            )
                         }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = { onToggleSimulatedLeak(!isSimulatedLeak) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isSimulatedLeak) CriticalRed else CriticalRed.copy(alpha = 0.2f),
-                            contentColor = if (isSimulatedLeak) Color.White else CriticalRed
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = if (isSimulatedLeak) "CANCEL SIMULATED LEAK" else "TRIGGER SIMULATED LEAK ALERT",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Section 3: Background Alert Information (Telegram Fallback)
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = CyberGlassCard),
-                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CyberBorder)),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.Notifications, contentDescription = null, tint = ElectricCyan, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("TELEGRAM BOT FALLBACK ALERTS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "To guarantee critical leak notifications when the app is minimized, the backend fires immediate Telegram push messages directly to your phone when leak == true.",
-                            fontSize = 10.sp,
-                            color = TextMuted,
-                            lineHeight = 14.sp
-                        )
                     }
                 }
+
+                Spacer(Modifier.height(20.dp))
+
+                SettingsSection(title = "ABOUT", icon = Icons.Default.Warning) {
+                    Text(text = "AquaIntel v1.0", fontSize = 15.sp, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                    Text(text = "Smart Water Infrastructure Control Center", fontSize = 13.sp, color = TextMuted)
+                    Text(text = "Enterprise-grade telemetry with real-time WebSocket connectivity.", fontSize = 12.sp, color = TextMuted, modifier = Modifier.padding(top = 4.dp))
+                }
+
+                Spacer(Modifier.height(40.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsSection(title: String, icon: ImageVector, content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().background(CyberCardBg, RoundedCornerShape(16.dp)).padding(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 12.dp)) {
+            Icon(icon, contentDescription = title, tint = ElectricCyan, modifier = Modifier.padding(end = 8.dp))
+            Text(text = title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = ElectricCyan, letterSpacing = 1.sp)
+        }
+        content()
     }
 }

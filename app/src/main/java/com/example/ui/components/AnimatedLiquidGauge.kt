@@ -7,168 +7,100 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.theme.CriticalRed
-import com.example.ui.theme.CyberBorder
-import com.example.ui.theme.CyberCardBg
 import com.example.ui.theme.ElectricCyan
-import com.example.ui.theme.NeonBlue
 import com.example.ui.theme.TextMuted
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
-import com.example.ui.theme.WarningOrange
 import kotlin.math.sin
 
 @Composable
 fun AnimatedLiquidGauge(
-    waterLevelPct: Double,
-    distanceCm: Double,
-    volumeLiters: Double,
-    isLeak: Boolean,
-    isRationing: Boolean,
+    percentage: Float,
     modifier: Modifier = Modifier,
-    size: Dp = 240.dp
+    liquidColor: Color = ElectricCyan
 ) {
-    val animatedLevel by animateFloatAsState(
-        targetValue = waterLevelPct.coerceIn(0.0, 100.0).toFloat(),
-        animationSpec = tween(durationMillis = 800, easing = LinearEasing),
-        label = "waterLevelAnimation"
+    val animatedPct by animateFloatAsState(
+        targetValue = percentage.coerceIn(0f, 100f),
+        animationSpec = androidx.compose.animation.core.spring(
+            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
+            stiffness = androidx.compose.animation.core.Spring.StiffnessLow
+        ),
+        label = "gauge_pct"
     )
 
-    // Wave phase animation
-    val infiniteTransition = rememberInfiniteTransition(label = "waveTransition")
+    val infiniteTransition = rememberInfiniteTransition(label = "wave")
     val wavePhase by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = (2 * Math.PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000, easing = LinearEasing)
-        ),
-        label = "wavePhase"
+        targetValue = 2f * Math.PI.toFloat(),
+        animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing)),
+        label = "wave_phase"
     )
 
-    // Liquid Colors based on system state
-    val (primaryColor, secondaryColor) = when {
-        isLeak -> Pair(CriticalRed, Color(0xFF990000))
-        isRationing || animatedLevel < 15f -> Pair(WarningOrange, Color(0xFFCC6600))
-        else -> Pair(ElectricCyan, NeonBlue)
-    }
-
-    Box(
-        modifier = modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(CyberCardBg)
-            .border(3.dp, primaryColor.copy(alpha = 0.6f), CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
+    Box(modifier = modifier.size(160.dp), contentAlignment = Alignment.Center) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.toPx()
-            val height = size.toPx()
+            val w = size.width
+            val h = size.height
+            val radius = w / 2f
 
-            // Height of liquid in pixels
-            val waterHeightPx = (animatedLevel / 100f) * height
-            val baseWaterY = height - waterHeightPx
-
-            val waveAmplitude = 12f
-
-            // Front Wave Path
-            val frontWavePath = Path().apply {
-                moveTo(0f, height)
-                lineTo(0f, baseWaterY)
-                var x = 0f
-                while (x <= width) {
-                    val y = baseWaterY + sin((x / width * 2 * Math.PI) + wavePhase).toFloat() * waveAmplitude
-                    lineTo(x, y)
-                    x += 4f
-                }
-                lineTo(width, height)
-                close()
+            val circlePath = Path().apply {
+                addOval(Rect(Offset.Zero, size))
             }
 
-            // Back Wave Path (offset phase for 3D depth effect)
-            val backWavePath = Path().apply {
-                moveTo(0f, height)
-                lineTo(0f, baseWaterY)
-                var x = 0f
-                while (x <= width) {
-                    val y = baseWaterY + sin((x / width * 2 * Math.PI) + wavePhase + Math.PI / 2).toFloat() * (waveAmplitude * 0.7f)
-                    lineTo(x, y)
-                    x += 4f
+            drawCircle(color = liquidColor.copy(alpha = 0.08f), radius = radius)
+
+            clipPath(circlePath, clipOp = ClipOp.Intersect) {
+                val fillHeight = h * (1f - animatedPct / 100f)
+                val wavePath = Path().apply {
+                    moveTo(0f, fillHeight)
+                    // OPTIMIZATION: step by 5 pixels to reduce path complexity and ensure 60fps on low-end devices
+                    for (x in 0..w.toInt() step 5) {
+                        val y = fillHeight + sin(x * 0.04f + wavePhase) * 6f
+                        lineTo(x.toFloat(), y)
+                    }
+                    lineTo(w, h)
+                    lineTo(0f, h)
+                    close()
                 }
-                lineTo(width, height)
-                close()
+                drawPath(wavePath, color = liquidColor.copy(alpha = 0.35f))
             }
 
-            // Draw Back Wave
-            drawPath(
-                path = backWavePath,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        secondaryColor.copy(alpha = 0.45f),
-                        secondaryColor.copy(alpha = 0.25f)
-                    )
-                )
-            )
-
-            // Draw Front Wave
-            drawPath(
-                path = frontWavePath,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        primaryColor.copy(alpha = 0.85f),
-                        secondaryColor.copy(alpha = 0.95f)
-                    )
-                )
+            drawCircle(
+                color = liquidColor.copy(alpha = 0.4f),
+                radius = radius - 2f,
+                style = Stroke(width = 3f)
             )
         }
 
-        // Overlay Telemetry Digital Readout (Clean Readout: 78.5% and Volume in Pure White)
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "%.1f%%".format(animatedLevel),
-                fontSize = 44.sp,
+                text = "${animatedPct.toInt()}%",
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary
+                color = liquidColor
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
             Text(
-                text = "%.0f L".format(volumeLiters),
-                fontSize = 18.sp,
+                text = "TANK LEVEL",
+                fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = ElectricCyan
-            )
-
-            Text(
-                text = "RESERVOIR CAPACITY",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextSecondary,
-                letterSpacing = 0.5.sp
+                color = TextMuted,
+                letterSpacing = 1.sp
             )
         }
     }

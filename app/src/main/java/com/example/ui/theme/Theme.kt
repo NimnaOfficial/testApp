@@ -3,35 +3,25 @@ package com.example.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
-private val AquaIntelColorScheme = darkColorScheme(
+private val AquaDarkScheme = darkColorScheme(
     primary = ElectricCyan,
-    onPrimary = Color.Black,
-    primaryContainer = CyberGlassCard,
-    onPrimaryContainer = ElectricCyan,
-    secondary = NeonBlue,
-    onSecondary = Color.Black,
-    tertiary = WarningOrange,
-    error = CriticalRed,
-    onError = Color.White,
+    onPrimary = CyberDarkBg,
+    secondary = NeonGreen,
+    onSecondary = CyberDarkBg,
     background = CyberDarkBg,
-    onBackground = TextPrimary,
     surface = CyberCardBg,
+    onBackground = TextPrimary,
     onSurface = TextPrimary,
-    surfaceVariant = CyberGlassCard,
-    onSurfaceVariant = TextSecondary,
-    outline = CyberBorder
+    error = ErrorRed,
+    onError = CyberDarkBg
 )
 
 @Composable
-fun AquaIntelTheme(
-    content: @Composable () -> Unit
-) {
+fun AquaIntelTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = AquaIntelColorScheme,
-        typography = Typography,
+        colorScheme = AquaDarkScheme,
+        typography = AquaTypography,
         content = content
     )
 }
-
