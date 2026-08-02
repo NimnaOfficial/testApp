@@ -57,7 +57,7 @@ import com.example.ui.theme.AquaIntelTheme
 import com.example.ui.theme.CyberCardBg
 import com.example.ui.theme.CyberDarkBg
 import com.example.ui.theme.ElectricCyan
-import com.example.ui.theme.NavyBlue
+import com.example.ui.theme.AccentBlue
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.viewmodel.AquaIntelViewModel
@@ -184,13 +184,13 @@ fun AquaTopBar(
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(NavyBlue.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                .background(AccentBlue.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Water,
                 contentDescription = "AquaIntel Logo",
-                tint = NavyBlue,
+                tint = AccentBlue,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -202,7 +202,7 @@ fun AquaTopBar(
                 text = "CONNECTED",
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                color = NavyBlue,
+                color = AccentBlue,
             )
             Text(
                 text = "AQUAINTEL",
@@ -222,7 +222,7 @@ fun AquaTopBar(
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = "Settings",
-                tint = NavyBlue,
+                tint = AccentBlue,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -247,8 +247,8 @@ fun AquaBottomBar(
             icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard", modifier = Modifier.size(22.dp)) },
             label = { Text("Dashboard", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = NavyBlue,
-                selectedTextColor = NavyBlue,
+                selectedIconColor = AccentBlue,
+                selectedTextColor = AccentBlue,
                 indicatorColor = Color.Transparent,
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary
@@ -262,8 +262,8 @@ fun AquaBottomBar(
             icon = { Icon(Icons.Default.Analytics, contentDescription = "Analytics", modifier = Modifier.size(22.dp)) },
             label = { Text("Logs & Trends", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = NavyBlue,
-                selectedTextColor = NavyBlue,
+                selectedIconColor = AccentBlue,
+                selectedTextColor = AccentBlue,
                 indicatorColor = Color.Transparent,
                 unselectedIconColor = TextSecondary,
                 unselectedTextColor = TextSecondary

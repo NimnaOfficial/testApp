@@ -75,7 +75,7 @@ fun WaterTankVisualizer(
                 // Primary Wave
                 val wavePath = Path().apply {
                     moveTo(left, fillHeight)
-                    for (x in left.toInt()..(left + tankWidth).toInt()) {
+                    for (x in left.toInt()..(left + tankWidth).toInt() step 4) {
                         val relativeX = x - left
                         val waveY = fillHeight + sin(relativeX * 0.05f + wavePhase) * 4f
                         lineTo(x.toFloat(), waveY)
@@ -97,7 +97,7 @@ fun WaterTankVisualizer(
                 // Secondary Wave (back)
                 val backWavePath = Path().apply {
                     moveTo(left, fillHeight)
-                    for (x in left.toInt()..(left + tankWidth).toInt()) {
+                    for (x in left.toInt()..(left + tankWidth).toInt() step 4) {
                         val relativeX = x - left
                         val waveY = fillHeight + sin(relativeX * 0.04f - wavePhase + 1f) * 6f
                         lineTo(x.toFloat(), waveY)

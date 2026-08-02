@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.CyberBorder
 import com.example.ui.theme.ElectricCyan
 import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NavyBlue
+import com.example.ui.theme.AccentBlue
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextSecondary
 
@@ -44,7 +44,7 @@ fun HysteresisBar(
             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("LOW ${lowThreshold.toInt()}%", fontSize = 10.sp, color = NavyBlue, fontWeight = FontWeight.Bold)
+            Text("LOW ${lowThreshold.toInt()}%", fontSize = 10.sp, color = AccentBlue, fontWeight = FontWeight.Bold)
             Text("Current: ${animLevel.toInt()}%", fontSize = 10.sp, color = TextSecondary)
             Text("HIGH ${highThreshold.toInt()}%", fontSize = 10.sp, color = NeonGreen, fontWeight = FontWeight.Bold)
         }
@@ -56,14 +56,14 @@ fun HysteresisBar(
             drawRoundRect(color = CyberBorder, size = Size(w, h), cornerRadius = CornerRadius(10f))
 
             val lowX = w * lowThreshold / 100f
-            drawRoundRect(color = NavyBlue.copy(alpha = 0.2f), size = Size(lowX, h), cornerRadius = CornerRadius(10f))
+            drawRoundRect(color = AccentBlue.copy(alpha = 0.2f), size = Size(lowX, h), cornerRadius = CornerRadius(10f))
 
             val highX = w * highThreshold / 100f
             drawRoundRect(color = NeonGreen.copy(alpha = 0.2f), topLeft = Offset(highX, 0f), size = Size(w - highX, h), cornerRadius = CornerRadius(10f))
 
             val indicatorX = w * animLevel / 100f
             val indicatorColor = when {
-                animLevel < lowThreshold -> NavyBlue
+                animLevel < lowThreshold -> AccentBlue
                 animLevel > highThreshold -> NeonGreen
                 else -> ElectricCyan
             }

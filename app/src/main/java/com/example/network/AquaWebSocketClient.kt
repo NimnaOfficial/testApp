@@ -38,10 +38,19 @@ class AquaWebSocketClient {
     private var reconnectJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    private var reconnectAttempts = 0
+    private val MAX_RECONNECT_ATTEMPTS = 10
+    private val BASE_DELAY_MS = 3000L
+
     fun connect(serverIp: String) {
         disconnect()
         _connectionState.value = ConnectionState.CONNECTING
+        reconnectAttempts = 0
 
+        connectInternal(serverIp)
+    }
+
+    private fun connectInternal(serverIp: String) {
         val url = "ws://$serverIp:8765"
         val request = try {
             Request.Builder().url(url).build()
@@ -51,58 +60,92 @@ class AquaWebSocketClient {
             return
         }
 
-        webSocket = client.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                Log.d(TAG, "WebSocket connected to $url")
-                _connectionState.value = ConnectionState.CONNECTED
-                reconnectJob?.cancel()
-            }
+        try {
+            webSocket = client.newWebSocket(request, object : WebSocketListener() {
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    Log.d(TAG, "WebSocket connected to $url")
+                    _connectionState.value = ConnectionState.CONNECTED
+                    reconnectAttempts = 0
+                    reconnectJob?.cancel()
+                }
 
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                scope.launch { _messages.send(text) }
-            }
+                override fun onMessage(webSocket: WebSocket, text: String) {
+                    scope.launch { _messages.send(text) }
+                }
 
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                Log.e(TAG, "WebSocket error: ${t.message}")
-                _connectionState.value = ConnectionState.ERROR
-                scheduleReconnect(serverIp)
-            }
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    Log.e(TAG, "WebSocket error: ${t.message}")
+                    _connectionState.value = ConnectionState.ERROR
+                    scheduleReconnect(serverIp)
+                }
 
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                Log.d(TAG, "WebSocket closing: $reason")
-                webSocket.close(1000, null)
-            }
+                override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                    Log.d(TAG, "WebSocket closing: $reason")
+                    try {
+                        webSocket.close(1000, null)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error closing WebSocket: ${e.message}")
+                    }
+                }
 
-            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                Log.d(TAG, "WebSocket closed: $reason")
-                _connectionState.value = ConnectionState.DISCONNECTED
-                scheduleReconnect(serverIp)
-            }
-        })
+                override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                    Log.d(TAG, "WebSocket closed: $reason")
+                    _connectionState.value = ConnectionState.DISCONNECTED
+                    scheduleReconnect(serverIp)
+                }
+            })
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to create WebSocket connection: ${e.message}")
+            _connectionState.value = ConnectionState.ERROR
+        }
     }
 
     fun sendCommand(command: String) {
-        val json = JSONObject().apply {
-            put("type", "command")
-            put("command", command)
+        try {
+            val json = JSONObject().apply {
+                put("type", "command")
+                put("command", command)
+            }
+            val sent = webSocket?.send(json.toString()) ?: false
+            if (!sent) {
+                Log.w(TAG, "Command not sent, WebSocket is disconnected: $command")
+            } else {
+                Log.d(TAG, "Sent command: $command")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to send command '$command': ${e.message}")
         }
-        webSocket?.send(json.toString())
-        Log.d(TAG, "Sent command: $command")
     }
 
     fun disconnect() {
         reconnectJob?.cancel()
-        webSocket?.close(1000, "Client disconnect")
+        try {
+            webSocket?.close(1000, "Client disconnect")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during disconnect: ${e.message}")
+        }
         webSocket = null
         _connectionState.value = ConnectionState.DISCONNECTED
     }
 
     private fun scheduleReconnect(serverIp: String) {
+        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+            Log.w(TAG, "Max reconnect attempts ($MAX_RECONNECT_ATTEMPTS) reached. Giving up.")
+            _connectionState.value = ConnectionState.ERROR
+            return
+        }
+
         reconnectJob?.cancel()
+        reconnectAttempts++
+
+        // Exponential backoff: 3s, 6s, 12s, 24s... capped at 60s
+        val delayMs = (BASE_DELAY_MS * (1L shl (reconnectAttempts - 1).coerceAtMost(4)))
+            .coerceAtMost(60_000L)
+
         reconnectJob = scope.launch {
-            delay(5000)
-            Log.d(TAG, "Attempting reconnect...")
-            connect(serverIp)
+            Log.d(TAG, "Reconnect attempt $reconnectAttempts/$MAX_RECONNECT_ATTEMPTS in ${delayMs}ms...")
+            delay(delayMs)
+            connectInternal(serverIp)
         }
     }
 

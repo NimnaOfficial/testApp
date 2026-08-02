@@ -19,7 +19,7 @@ abstract class AquaDatabase : RoomDatabase() {
                     context.applicationContext,
                     AquaDatabase::class.java,
                     "aqua_database"
-                ).fallbackToDestructiveMigration(false)
+                ).fallbackToDestructiveMigration()
                     .build().also { INSTANCE = it }
             }
         }

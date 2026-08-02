@@ -145,9 +145,13 @@ class AquaIntelViewModel(application: Application) : AndroidViewModel(applicatio
                 "command_ack" -> {
                     _isCommandPending.value = false
                     val ackCmd = obj.optString("command", "")
-                    viewModelScope.launch {
+                    viewModelScope.launch(Dispatchers.IO) {
                         _toastEvents.emit("$ackCmd acknowledged")
-                        dao.insertLog(ActivityLog(message = "Command ACK: $ackCmd", type = "COMMAND"))
+                        try {
+                            dao.insertLog(ActivityLog(message = "Command ACK: $ackCmd", type = "COMMAND"))
+                        } catch (e: Exception) {
+                            Log.e(TAG, "DB log insert error: ${e.message}")
+                        }
                     }
                 }
                 "duty_cycle" -> {

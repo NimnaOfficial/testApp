@@ -32,7 +32,7 @@ import com.example.ui.theme.ElectricCyan
 import com.example.ui.theme.ErrorRed
 import com.example.ui.theme.NeonGreen
 import com.example.ui.theme.SuccessGreen
-import com.example.ui.theme.NavyBlue
+import com.example.ui.theme.AccentBlue
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
@@ -115,7 +115,7 @@ fun DashboardScreen(
                         text = "TANK STATUS",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = NavyBlue,
+                        color = AccentBlue,
                         letterSpacing = 1.sp
                     )
                     Spacer(Modifier.height(8.dp))
@@ -136,7 +136,7 @@ fun DashboardScreen(
                     percentage = telemetry.waterLevelPct,
                     liquidColor = when {
                         telemetry.waterLevelPct < 20f -> ErrorRed
-                        telemetry.waterLevelPct < 40f -> NavyBlue
+                        telemetry.waterLevelPct < 40f -> AccentBlue
                         else -> ElectricCyan
                     }
                 )
@@ -157,7 +157,7 @@ fun DashboardScreen(
                 ControlButton(
                     text = if (pumpMode == "AUTO") "Switch to Manual" else "Switch to Auto",
                     icon = Icons.Default.Lock,
-                    color = NavyBlue,
+                    color = AccentBlue,
                     enabled = !isPending,
                     isPending = isPending && (pendingCommandName == "MODE_AUTO" || pendingCommandName == "MODE_MANUAL"),
                     onClick = { onDispatchCommand(if (pumpMode == "AUTO") "MODE_MANUAL" else "MODE_AUTO") },
@@ -189,7 +189,7 @@ fun DashboardScreen(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     MetricTile(icon = Icons.Default.Speed, label = "Flow Rate", value = "${"%.1f".format(telemetry.flowRateLpm)} L/m", color = NeonGreen)
                     MetricTile(icon = Icons.Default.WaterDrop, label = "Efficiency", value = "94%", color = ElectricCyan)
-                    MetricTile(icon = Icons.Default.Warning, label = "Pressure", value = "High", color = NavyBlue)
+                    MetricTile(icon = Icons.Default.Warning, label = "Pressure", value = "High", color = AccentBlue)
                 }
             }
         }
@@ -197,7 +197,7 @@ fun DashboardScreen(
         // Hysteresis Bar (Refined)
         GlassmorphicCard(modifier = Modifier.fillMaxWidth()) {
             Column {
-                Text(text = "AUTO-FILL RANGE", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = NavyBlue, letterSpacing = 1.sp)
+                Text(text = "AUTO-FILL RANGE", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = AccentBlue, letterSpacing = 1.sp)
                 Spacer(Modifier.height(12.dp))
                 HysteresisBar(currentLevel = telemetry.waterLevelPct)
             }
